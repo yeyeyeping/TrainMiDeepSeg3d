@@ -139,25 +139,23 @@ class BraTS2018(Dataset):
         z, y, x = np.where(mask != 0)
         point = np.zeros_like(mask, dtype=np.uint8)
         # 生成极值点，并增加扰动
-        maxzidx, minzidx = min(mask.shape[0], np.argmax(z) + random.randint(-pert, pert)), max(0, np.argmin(
-            z) + random.randint(-pert, pert))
+        maxzidx, minzidx = np.clip(np.argmax(z) + random.randint(-pert, pert), 0, mask.shape[0] - 1),np.clip(np.argmin(z) + random.randint(-pert, pert), 0, mask.shape[0] - 1)
+
         point[z[maxzidx], y[maxzidx], x[maxzidx]] = 1
         point[z[minzidx], y[minzidx], x[minzidx]] = 1
 
-        maxyidx, minyidx = min(mask.shape[1], np.argmax(y) + random.randint(-pert, pert)), max(0, np.argmin(
-            y) + random.randint(-pert, pert))
+        maxyidx, minyidx = np.clip(np.argmax(y) + random.randint(-pert, pert), 0, mask.shape[0] - 1),np.clip(np.argmin(y) + random.randint(-pert, pert), 0, mask.shape[0] - 1)
         point[z[maxyidx], y[maxyidx], x[maxyidx]] = 1
         point[z[minyidx], y[minyidx], x[minyidx]] = 1
 
-        maxxidx, minxidx = min(mask.shape[2], np.argmax(x) + random.randint(-pert, pert)), max(0, np.argmin(
-            x) + random.randint(-pert, pert))
+        maxxidx, minxidx = np.clip(np.argmax(x) + random.randint(-pert, pert), 0, mask.shape[0] - 1),np.clip(np.argmin(x) + random.randint(-pert, pert), 0, mask.shape[0] - 1)
         point[z[maxxidx], y[maxxidx], x[maxxidx]] = 1
         point[z[minxidx], y[minxidx], x[minxidx]] = 1
 
         return [
-            max(np.min(z) - pert, 0), min(np.max(z) + pert, mask.shape[0]),
-            max(np.min(y) - pert, 0), min(np.max(y) + pert, mask.shape[1]),
-            max(np.min(x) - pert, 0), min(np.max(x) + pert, mask.shape[2])
+            max(np.min(z) - pert, 0), min(np.max(z) + pert, mask.shape[0] - 1),
+            max(np.min(y) - pert, 0), min(np.max(y) + pert, mask.shape[1] - 1),
+            max(np.min(x) - pert, 0), min(np.max(x) + pert, mask.shape[2] - 1)
         ], point
 
 

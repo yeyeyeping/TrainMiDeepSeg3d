@@ -87,6 +87,7 @@ trainloader = DataLoader(db_train, batch_size=args.batch_size, shuffle=True, num
                          worker_init_fn=worker_init_fn)
 testloader = DataLoader(db_test, batch_size=1, num_workers=4)
 network = unet3d.Unet3d(in_dim=2, out_dim=2, num_filter=8)
+network.to(args.devices)
 criterion = DiceLoss()
 opt = Adam(network.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 sched = CosineAnnealingLR(opt, T_max=len(db_train) / args.batch_size * args.epoch, eta_min=1e-7, )
@@ -130,6 +131,7 @@ for epoch_num in range(args.epoch):
             test_bar.set_description(
                 f"EVAL | epoch:{epoch_num} batch idx: {id} dice loss:{test_acc.value:.5f}")
         logger.info(f"epoch:{epoch_num} test acc: {test_acc.average}")
+        writer.add_scalar("test/acc", test_acc.average,it)
         if epoch_num % 50 == 0:
             checkpointpth = os.path.join(args.checkpoint, f"epoch{epoch_num}_checkpoint_avg_dice{test_acc.value}.pth")
             torch.save(network.state_dict(), checkpointpth)
