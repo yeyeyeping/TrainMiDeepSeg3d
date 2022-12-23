@@ -110,9 +110,9 @@ for epoch_num in range(args.epoch):
         writer.add_scalar("train/loss", loss.cpu().detach().item(), it)
         sample = list(range(0, volume_batch.shape[2], 3))
         sample_img = np.expand_dims(volume_batch[0, 0, sample].cpu().numpy(), axis=1).repeat(3, axis=1)
+        sample_img = (sample_img - sample_img.min()) / (sample_img.max() - sample_img.min())
         pred = np.expand_dims(torch.argmax(out.cpu(), dim=1).int().numpy()[0, sample], axis=1).repeat(3, axis=1)
         mask = np.expand_dims(label_batch[0, sample].cpu().numpy(), axis=1).repeat(3, axis=1)
-
         grid_img = np.concatenate([sample_img, pred, mask])
         grid_img = make_grid(torch.from_numpy(grid_img), nrow=len(sample))
         writer.add_image("train/img", grid_img, it)
@@ -131,7 +131,7 @@ for epoch_num in range(args.epoch):
             test_bar.set_description(
                 f"EVAL | epoch:{epoch_num} batch idx: {id} dice loss:{test_acc.value:.5f}")
         logger.info(f"epoch:{epoch_num} test acc: {test_acc.average}")
-        writer.add_scalar("test/acc", test_acc.average,it)
+        writer.add_scalar("test/acc", test_acc.average, it)
         if epoch_num % 50 == 0:
             checkpointpth = os.path.join(args.checkpoint, f"epoch{epoch_num}_checkpoint_avg_dice{test_acc.value}.pth")
             torch.save(network.state_dict(), checkpointpth)
